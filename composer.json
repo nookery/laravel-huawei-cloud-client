@@ -1,0 +1,29 @@
+{
+    "name": "nookery/laravel-huawei-cloud-client",
+    "license": "MIT",
+    "description": "华为云组件，适用于Laravel框架",
+    "homepage": "https://github.com/nookery/huawei-cloud",
+    "authors": [
+        {
+            "name": "Nookery",
+            "homepage": "https://github.com/nookery",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.0"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Nookery\\HuaweiCloud\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nookery\\HuaweiCloud\\Provider"
+            ]
+        }
+    }
+}
