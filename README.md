@@ -21,7 +21,8 @@ php artisan vendor:publish --provider="\HuaweiCloud\Provider"
 
 ## 使用
 
-- 输出格式
+- 输出格式  
+
     以下function的输出都是这个实例：`HuaweiCloud\Contracts\Response`
     
 - 查询当前账号下的客户
@@ -64,4 +65,4 @@ php artisan vendor:publish --provider="\HuaweiCloud\Provider"
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This software is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
