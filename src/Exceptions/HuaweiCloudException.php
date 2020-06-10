@@ -1,6 +1,6 @@
 <?php
 
-namespace Nookery\HuaweiCloud\Exceptions;
+namespace HuaweiCloud\Exceptions;
 
 class HuaweiCloudException extends \Exception
 {

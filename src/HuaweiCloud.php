@@ -1,43 +1,92 @@
 <?php
 
-namespace Nookery\HuaweiCloud;
+namespace HuaweiCloud;
 
+use Exception;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Nookery\HuaweiCloud\Exceptions\HuaweiCloudException;
+use HuaweiCloud\Exceptions\HuaweiCloudException;
 
 class HuaweiCloud
 {
-    // 查询客户列表API的路径
-    const RESOURCE_PATH_OF_CUSTOMERS = '/v2/partners/sub-customers/query';
     // 获取Token API的路径
     const RESOURCE_PATH_OF_TOKEN = '/v3/auth/tokens';
 
-    public function debug()
+    // 创建客户API的路径
+    const RESOURCE_PATH_OF_CREATE_USER = '/v2/partners/sub-customers';
+
+    // 查询客户列表API的路径
+    const RESOURCE_PATH_OF_CUSTOMERS = '/v2/partners/sub-customers/query';
+
+    protected $httpClient;
+
+    public function __construct()
     {
-        dd($this->customers());
+        $this->httpClient = new Client();
+    }
+
+    /**
+     * 创建用户
+     *
+     * @param string $accountId 伙伴销售平台的用户唯一标识，该标识的具体值由伙伴分配
+     * @param string $userName 客户的华为云账号名
+     * @return mixed
+     * @throws GuzzleException
+     * @throws HuaweiCloudException
+     */
+    public function createCustomer($accountId = '', $userName = '')
+    {
+        try {
+            $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_CREATE_USER),
+                [
+                    'form_params' => [
+                        'xaccount_id' => $accountId,
+                        'xaccount_type' => config('huawei.xaccount_type'),
+                        'domain_name' => $userName,
+                        'cooperation_type' => 1, // 1代表推荐模式
+                    ],
+                    'headers' => [
+                        'X-AUTH-TOKEN' => $this->getToken()
+                    ]
+                ]
+            );
+        } catch (ClientException $exception) {
+            $response = $exception->getResponse();
+        }
+
+        return json_decode((string) $response->getBody());
     }
 
     /**
      * 获取用户列表
      *
-     * @return array
+     * @return mixed
      * @throws HuaweiCloudException
+     * @throws GuzzleException
      */
     public function customers()
     {
-        $response = Http::withHeaders(['X-AUTH-TOKEN' => $this->getToken()])
-            ->post($this->makeUrl(self::RESOURCE_PATH_OF_CUSTOMERS), [
-                'account_name' => null
-            ]);
+        $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_CUSTOMERS),
+            [
+                'form_params' => [
+                    'account_name' => null
+                ],
+                'headers' => [
+                    'X-AUTH-TOKEN' => $this->getToken()
+                ]
+            ]
+        );
 
-        return $response->json();
+        return json_decode((string) $response->getBody());
     }
 
     /**
      * 获取Token
      *
-     * @return string
+     * @return mixed
+     * @throws GuzzleException
      * @throws HuaweiCloudException
      */
     private function getToken()
@@ -48,32 +97,36 @@ class HuaweiCloud
     /**
      * 从服务器获取新的Token，应在前Token失效时使用
      *
-     * @return string
+     * @return mixed
+     * @throws GuzzleException
      * @throws HuaweiCloudException
      */
     private function getTokenFromServer()
     {
-        $response = Http::post($this->makeUrl(self::RESOURCE_PATH_OF_TOKEN), [
-            'auth' => [
-                "identity" => [
-                    "methods" => ["password"],
-                    "password" => [
-                        "user" => [
-                            "name" => config('huawei.auth.name'),
-                            "password" => config('huawei.auth.password'),
-                            "domain" =>  [
-                                "name" => config('huawei.auth.name')
+        $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_TOKEN),
+            [
+                'json' => [
+                    'auth' => [
+                        "identity" => [
+                            "methods" => ["password"],
+                            "password" => [
+                                "user" => [
+                                    "name" => config('huawei.auth.name'),
+                                    "password" => config('huawei.auth.password'),
+                                    "domain" =>  [
+                                        "name" => config('huawei.auth.name')
+                                    ]
+                                ]
                             ]
                         ]
                     ]
                 ]
-            ]
         ]);
 
-        if ($response->successful()) {
-            return $response->header('X-Subject-Token');
+        if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+            return $response->getHeader('X-Subject-Token');
         } else {
-            throw new HuaweiCloudException($response->body());
+            throw new HuaweiCloudException($response->getBody());
         }
     }
 

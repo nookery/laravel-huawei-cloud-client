@@ -1,6 +1,6 @@
 <?php
 
-namespace Nookery\HuaweiCloud\Facades;
+namespace HuaweiCloud\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

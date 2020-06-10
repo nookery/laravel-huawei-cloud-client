@@ -1,6 +1,6 @@
 <?php
 
-namespace Nookery\HuaweiCloud;
+namespace HuaweiCloud;
 
 use Illuminate\Support\ServiceProvider;
 
