@@ -11,8 +11,10 @@ return [
 
     'scheme' => 'https', // 表示用于传输请求的协议，当前所有API均采用HTTPS协议
     'endpoint' => 'bss.myhuaweicloud.com', // 指定承载REST服务端点的服务器域名或IP
+    'bpId' => 'xxxxxxxx', // 合作伙伴ID
+    'xaccount_type' => 'xxx_IDP', // 伙伴平台标识
     'auth' => [
-        "name" => "XXXX",
-        "password" => "XXXX",
+        "name" => "xxxx",
+        "password" => "xxxx",
     ]
 ];
