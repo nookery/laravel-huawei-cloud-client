@@ -18,13 +18,39 @@ php artisan vendor:publish --provider="Nookery\HuaweiCloud\Provider"
 - 查询当前账号下的客户
 
 ```php
-    \Nookery\HuaweiCloud\Facades\HuaweiCloud::customers();
+    \HuaweiCloud\Facades\HuaweiCloud::customers();
 ```
 
 - 创建客户账号
 
 ```php
-    \Nookery\HuaweiCloud\Facades\HuaweiCloud::createCustomer();
+    /**
+     * 创建用户
+     *
+     * @param string $accountId 伙伴销售平台的用户唯一标识，该标识的具体值由伙伴分配
+     * @param string $userName 客户的华为云账号名
+     * @param string $cooperationType 模式，1是推荐模式，0是垫付模式，默认是垫付模式
+     * @return mixed
+     * @throws GuzzleException
+     * @throws HuaweiCloudException
+     */
+    \HuaweiCloud\Facades\HuaweiCloud::createCustomer($accountId = '', $userName = '', $cooperationType = '0');
+```
+
+- 为用户设置折扣
+
+```php
+    /**
+     * 给用户设置折扣
+     *
+     * @param string $customerId 客户ID
+     * @param int $discount 折扣
+     * @param \Carbon\Carbon $expiresAt 失效时间，默认2年后，或传递一个Canbon实例
+     * @return mixed
+     * @throws GuzzleException
+     * @throws HuaweiCloudException
+     */
+    \HuaweiCloud\Facades\HuaweiCloud::setDiscount($customerId = '', $discount = 1, \Carbon\Carbon $expiresAt = null);
 ```
 
 ## License

@@ -6,8 +6,11 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use HuaweiCloud\Exceptions\HuaweiCloudException;
+use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 
 class HuaweiCloud
 {
@@ -19,6 +22,9 @@ class HuaweiCloud
 
     // 查询客户列表API的路径
     const RESOURCE_PATH_OF_CUSTOMERS = '/v2/partners/sub-customers/query';
+
+    // 给用户配置折扣的API的路径
+    const RESOURCE_PATH_OF_SET_DISCOUNT = '/v2/partners/discounts';
 
     protected $httpClient;
 
@@ -84,13 +90,65 @@ class HuaweiCloud
     }
 
     /**
+     * 给用户设置折扣
+     *
+     * @param string $customerId 客户ID
+     * @param int $discount 折扣
+     * @param \Carbon\Carbon $expiresAt 失效时间，默认2年后，或传递一个Canbon实例
+     * @return mixed
+     * @throws GuzzleException
+     * @throws HuaweiCloudException
+     */
+    public function setDiscount($customerId = '', $discount = 1, \Carbon\Carbon $expiresAt = null)
+    {
+        // 默认有效期一年
+        $expiresAt = $expiresAt ?: Carbon::now()->addYear(1);
+
+        try {
+            $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_SET_DISCOUNT),
+                [
+                    'json' => [
+                        'sub_customer_discounts' => [
+                            [
+                                'customer_id' => $customerId,
+                                'discount' => "$discount", // 折扣率，最高精确到4位小数。折扣范围：0.8~1
+                                "effective_time" => Carbon::now()->toIso8601ZuluString(),
+                                "expire_time" => $expiresAt->toIso8601ZuluString()
+                            ]
+                        ],
+                    ],
+                    'headers' => [
+                        'X-AUTH-TOKEN' => $this->getToken()
+                    ],
+                    'debug' => true,
+                ]
+            );
+        } catch (ClientException $exception) {
+            $response = $exception->getResponse();
+        }
+
+        return json_decode((string) $response->getBody());
+    }
+
+    /**
+     * 从HTTP响应中提取关键信息
+     *
+     * @param null $response
+     * @return mixed
+     */
+    private function formatResponse($response = null)
+    {
+        return json_decode((string) $response->getBody());
+    }
+
+    /**
      * 获取Token
      *
      * @return mixed
      * @throws GuzzleException
      * @throws HuaweiCloudException
      */
-    private function getToken()
+    public function getToken()
     {
         return Cache::get('huawei_cloud_token') ?: $this->getTokenFromServer();
     }
@@ -124,11 +182,32 @@ class HuaweiCloud
                 ]
         ]);
 
+        Log::info('从华为云获取token');
+        // Log::info($response->getBody());
+
         if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+            $this->storeTokenToCache($response);
             return $response->getHeader('X-Subject-Token');
         } else {
             throw new HuaweiCloudException($response->getBody());
         }
+    }
+
+    /**
+     * 将token信息存入缓存中
+     *
+     * @param null $response
+     */
+    private function storeTokenToCache($response = null)
+    {
+        $body = json_decode($response->getBody());
+        $expiresAt = Carbon::parse($body->token->expires_at)->setTimezone(config('app.timezone'));
+
+        $result = Cache::put('huawei_cloud_token', $response->getHeader('X-Subject-Token'), $expiresAt->subMinutes(10));
+
+        // Log::info('将华为云Token存入缓存的返回：'.$result);
+        // Log::info('从缓存获取华为云Token：');
+        // Log::info(Cache::get('huawei_cloud_token'));
     }
 
     /**
