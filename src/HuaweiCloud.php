@@ -144,6 +144,11 @@ class HuaweiCloud
     private function formatResponse(\GuzzleHttp\Psr7\Response $response = null)
     {
         if (optional(json_decode($response->getBody()))->error_code) {
+            if ('APIGW.0307' === optional(json_decode($response->getBody()))->error_code) {
+                // 此错误码表示Token失效（即使Token在有效期内，也可能失效）,清除缓存
+                $this->destroyTokenInCache();
+            }
+
             return (new Response())->setStatusCode($response->getStatusCode())
                 ->setRequestId(optional(json_decode($response->getBody()))->request_id)
                 ->setErrorCode(optional(json_decode($response->getBody()))->error_code)
@@ -224,6 +229,15 @@ class HuaweiCloud
         // Log::info('将华为云Token存入缓存的返回：'.$result);
         // Log::info('从缓存获取华为云Token：');
         // Log::info(Cache::get('huawei_cloud_token'));
+    }
+
+    /**
+     * 清除Token缓存
+     *
+     */
+    private function destroyTokenInCache()
+    {
+        $result = Cache::forget('huawei_cloud_token');
     }
 
     /**
