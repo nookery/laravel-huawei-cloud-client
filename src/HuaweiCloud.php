@@ -32,11 +32,12 @@ class HuaweiCloud
      *
      * @param string $accountId 伙伴销售平台的用户唯一标识，该标识的具体值由伙伴分配
      * @param string $userName 客户的华为云账号名
+     * @param string $cooperationType 模式，1是推荐模式，0是垫付模式
      * @return mixed
      * @throws GuzzleException
      * @throws HuaweiCloudException
      */
-    public function createCustomer($accountId = '', $userName = '')
+    public function createCustomer($accountId = '', $userName = '', $cooperationType = '0')
     {
         try {
             $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_CREATE_USER),
@@ -45,7 +46,7 @@ class HuaweiCloud
                         'xaccount_id' => $accountId,
                         'xaccount_type' => config('huawei.xaccount_type'),
                         'domain_name' => $userName,
-                        'cooperation_type' => 1, // 1代表推荐模式
+                        'cooperation_type' => $cooperationType, // 1代表推荐模式
                     ],
                     'headers' => [
                         'X-AUTH-TOKEN' => $this->getToken()
