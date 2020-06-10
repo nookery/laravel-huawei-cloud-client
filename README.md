@@ -1,8 +1,17 @@
 # Huawei Cloud Client for Laravel
 
+<p align="center">
+<a href="https://travis-ci.org/nookery/laravel-huawei-cloud-client"><img src="https://travis-ci.org/nookery/laravel-huawei-cloud-client.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/nookery/laravel-huawei-cloud-client"><img src="https://poser.pugx.org/nookery/laravel-huawei-cloud-client/d/total.svg" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/nookery/laravel-huawei-cloud-client"><img src="https://poser.pugx.org/nookery/laravel-huawei-cloud-client/v/stable.svg" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/nookery/laravel-huawei-cloud-client"><img src="https://poser.pugx.org/nookery/laravel-huawei-cloud-client/license.svg" alt="License"></a>
+</p>
+
 ## 简介
 
-适用于Laravel的华为云伙伴API的客户端。
+适用于Laravel的华为云伙伴API的客户端。  
+
+本组件是对[华为云伙伴API]（https://support.huaweicloud.com/api-bpconsole/zh-cn_topic_0075200705.html）的封装，请在已阅读华为云相关文档的前提下使用。
 
 ## 版本与兼容
 
