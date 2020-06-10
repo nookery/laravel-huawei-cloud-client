@@ -8,13 +8,16 @@
 ```
 composer require nookery/laravel-huawei-cloud-client  
 
-php artisan vendor:publish --provider="Nookery\HuaweiCloud\Provider"    
+php artisan vendor:publish --provider="\HuaweiCloud\Provider"    
 ```
 
 最后在`config/huawei.php`文件中配置您的账号和密码。
 
 ## 使用
 
+- 输出格式
+    以下function的输出都是这个实例：`HuaweiCloud\Contracts\Response`
+    
 - 查询当前账号下的客户
 
 ```php

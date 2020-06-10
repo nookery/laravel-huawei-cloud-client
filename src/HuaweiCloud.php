@@ -6,6 +6,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
+use HuaweiCloud\Contracts\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use HuaweiCloud\Exceptions\HuaweiCloudException;
@@ -63,30 +64,34 @@ class HuaweiCloud
             $response = $exception->getResponse();
         }
 
-        return json_decode((string) $response->getBody());
+        return $this->formatResponse($response);
     }
 
     /**
      * 获取用户列表
      *
      * @return mixed
-     * @throws HuaweiCloudException
      * @throws GuzzleException
+     * @throws HuaweiCloudException
      */
     public function customers()
     {
-        $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_CUSTOMERS),
-            [
-                'form_params' => [
-                    'account_name' => null
-                ],
-                'headers' => [
-                    'X-AUTH-TOKEN' => $this->getToken()
+        try {
+            $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_CUSTOMERS),
+                [
+                    'form_params' => [
+                        'account_name' => null
+                    ],
+                    'headers' => [
+                        'X-AUTH-TOKEN' => $this->getToken()
+                    ]
                 ]
-            ]
-        );
+            );
+        } catch (ClientException $exception) {
+            $response = $exception->getResponse();
+        }
 
-        return json_decode((string) $response->getBody());
+        return $this->formatResponse($response);
     }
 
     /**
@@ -94,7 +99,7 @@ class HuaweiCloud
      *
      * @param string $customerId 客户ID
      * @param int $discount 折扣
-     * @param \Carbon\Carbon $expiresAt 失效时间，默认2年后，或传递一个Canbon实例
+     * @param \Carbon\Carbon|null $expiresAt $expiresAt 失效时间，默认2年后，或传递一个Canbon实例
      * @return mixed
      * @throws GuzzleException
      * @throws HuaweiCloudException
@@ -120,14 +125,14 @@ class HuaweiCloud
                     'headers' => [
                         'X-AUTH-TOKEN' => $this->getToken()
                     ],
-                    'debug' => true,
+                    'debug' => false,
                 ]
             );
         } catch (ClientException $exception) {
             $response = $exception->getResponse();
         }
 
-        return json_decode((string) $response->getBody());
+        return $this->formatResponse($response);
     }
 
     /**
@@ -136,9 +141,18 @@ class HuaweiCloud
      * @param null $response
      * @return mixed
      */
-    private function formatResponse($response = null)
+    private function formatResponse(\GuzzleHttp\Psr7\Response $response = null)
     {
-        return json_decode((string) $response->getBody());
+        if (optional(json_decode($response->getBody()))->error_code) {
+            return (new Response())->setStatusCode($response->getStatusCode())
+                ->setRequestId(optional(json_decode($response->getBody()))->request_id)
+                ->setErrorCode(optional(json_decode($response->getBody()))->error_code)
+                ->setErrorMessage(optional(json_decode($response->getBody()))->error_msg);
+        } else {
+            return (new Response())->setStatusCode($response->getStatusCode())
+                ->setRequestId(optional(json_decode($response->getBody()))->request_id)
+                ->setResult(collect(json_decode($response->getBody())));
+        }
     }
 
     /**
@@ -162,33 +176,35 @@ class HuaweiCloud
      */
     private function getTokenFromServer()
     {
-        $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_TOKEN),
-            [
-                'json' => [
-                    'auth' => [
-                        "identity" => [
-                            "methods" => ["password"],
-                            "password" => [
-                                "user" => [
-                                    "name" => config('huawei.auth.name'),
-                                    "password" => config('huawei.auth.password'),
-                                    "domain" =>  [
-                                        "name" => config('huawei.auth.name')
+        try {
+            Log::info('从华为云获取token');
+            // Log::info($response->getBody());
+
+            $response = $this->httpClient->request('POST', $this->makeUrl(self::RESOURCE_PATH_OF_TOKEN),
+                [
+                    'json' => [
+                        'auth' => [
+                            "identity" => [
+                                "methods" => ["password"],
+                                "password" => [
+                                    "user" => [
+                                        "name" => config('huawei.auth.name'),
+                                        "password" => config('huawei.auth.password'),
+                                        "domain" =>  [
+                                            "name" => config('huawei.auth.name')
+                                        ]
                                     ]
                                 ]
                             ]
                         ]
                     ]
-                ]
-        ]);
+                ]);
 
-        Log::info('从华为云获取token');
-        // Log::info($response->getBody());
-
-        if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
             $this->storeTokenToCache($response);
             return $response->getHeader('X-Subject-Token');
-        } else {
+        } catch (ClientException $exception) {
+            $response = $exception->getResponse();
+
             throw new HuaweiCloudException($response->getBody());
         }
     }
