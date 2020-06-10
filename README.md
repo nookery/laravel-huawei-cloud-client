@@ -4,6 +4,12 @@
 
 适用于Laravel的华为云伙伴API的客户端。
 
+## 版本与兼容
+
+ Laravel  | 本软件
+:---------|:----------
+ 5.8.x    | 1.x.x
+
 ## 安装
 ```
 composer require nookery/laravel-huawei-cloud-client  
