@@ -63,6 +63,10 @@ php artisan vendor:publish --provider="\HuaweiCloud\Provider"
     \HuaweiCloud\Facades\HuaweiCloud::setDiscount($customerId = '', $discount = 1, \Carbon\Carbon $expiresAt = null);
 ```
 
+## 其他说明
+
+本软件使用到了Laravel的缓存（`Illuminate\Support\Facades\Cache`）来存储华为云的Token，缓存驱动请不要配置成`array`，驱动是`array`时仅对单次请求有效。
+
 ## License
 
 This software is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
