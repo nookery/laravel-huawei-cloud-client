@@ -17,16 +17,22 @@
 
  Laravel  | 本软件
 :---------|:----------
- 5.8.x    | 1.x.x
+  5.4.0 < Laravel < 6.0.0   | 1.x.x
 
 ## 安装
+
 ```
 composer require nookery/laravel-huawei-cloud-client  
 
-php artisan vendor:publish --provider="\HuaweiCloud\Provider"    
+# 若Laravel版本 < 5.5（5.5以下版本不支持扩展包发现），需在config/app.php文件中providers中增加：
+
+\HuaweiCloud\Provider::class,
+
+php artisan config:clear
+php artisan vendor:publish [输入带有"HuaweiCloud\Provider"的那一行的数字]   
 ```
 
-最后在`config/huawei.php`文件中配置您的账号和密码。
+检查是否正确生成了`config/huawei.php`文件，并在`config/huawei.php`文件中配置您的账号和密码。
 
 ## 使用
 
