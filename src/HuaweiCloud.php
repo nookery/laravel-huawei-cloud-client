@@ -143,19 +143,19 @@ class HuaweiCloud
      */
     private function formatResponse(\GuzzleHttp\Psr7\Response $response = null)
     {
-        if (isset(json_decode($response->getBody())->error_code)) {
-            if ('APIGW.0307' === json_decode($response->getBody())->error_code) {
+        if ($this->getErrorCodeFromResponse($response)) {
+            if ('APIGW.0307' === $this->getErrorCodeFromResponse($response)) {
                 // 此错误码表示Token失效（即使Token在有效期内，也可能失效）,清除缓存
                 $this->destroyTokenInCache();
             }
 
             return (new Response())->setStatusCode($response->getStatusCode())
-                ->setRequestId(json_decode($response->getBody())->request_id)
-                ->setErrorCode(json_decode($response->getBody())->error_code)
-                ->setErrorMessage(json_decode($response->getBody())->error_msg);
+                ->setRequestId()
+                ->setErrorCode($this->getErrorCodeFromResponse($response))
+                ->setErrorMessage($this->getErrorMessageFromResponse($response));
         } else {
             return (new Response())->setStatusCode($response->getStatusCode())
-                ->setRequestId(json_decode($response->getBody())->request_id)
+                ->setRequestId($this->getRequestIdFromResponse($response))
                 ->setResult(collect(json_decode($response->getBody())));
         }
     }
@@ -170,6 +170,45 @@ class HuaweiCloud
     public function getToken()
     {
         return Cache::get('huawei_cloud_token') ?: $this->getTokenFromServer();
+    }
+
+    /**
+     * 从华为云返回的请求中提取error message
+     *
+     * @param \GuzzleHttp\Psr7\Response $response
+     * @return string
+     */
+    private function getErrorMessageFromResponse(\GuzzleHttp\Psr7\Response $response)
+    {
+        $body = json_decode($response->getBody());
+
+        return isset($body->error_msg) ? $body->error_msg : '';
+    }
+
+    /**
+     * 从华为云返回的请求中提取error code
+     *
+     * @param \GuzzleHttp\Psr7\Response $response
+     * @return string
+     */
+    private function getErrorCodeFromResponse(\GuzzleHttp\Psr7\Response $response)
+    {
+        $body = json_decode($response->getBody());
+
+        return isset($body->error_code) ? $body->error_code : '';
+    }
+
+    /**
+     * 从华为云返回的请求中提取request id
+     *
+     * @param \GuzzleHttp\Psr7\Response $response
+     * @return string
+     */
+    private function getRequestIdFromResponse(\GuzzleHttp\Psr7\Response $response)
+    {
+        $body = json_decode($response->getBody());
+
+        return isset($body->request_id) ? $body->request_id : '';
     }
 
     /**
