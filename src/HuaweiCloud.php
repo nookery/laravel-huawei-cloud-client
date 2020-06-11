@@ -143,19 +143,19 @@ class HuaweiCloud
      */
     private function formatResponse(\GuzzleHttp\Psr7\Response $response = null)
     {
-        if (optional(json_decode($response->getBody()))->error_code) {
-            if ('APIGW.0307' === optional(json_decode($response->getBody()))->error_code) {
+        if (isset(json_decode($response->getBody())->error_code)) {
+            if ('APIGW.0307' === json_decode($response->getBody())->error_code) {
                 // 此错误码表示Token失效（即使Token在有效期内，也可能失效）,清除缓存
                 $this->destroyTokenInCache();
             }
 
             return (new Response())->setStatusCode($response->getStatusCode())
-                ->setRequestId(optional(json_decode($response->getBody()))->request_id)
-                ->setErrorCode(optional(json_decode($response->getBody()))->error_code)
-                ->setErrorMessage(optional(json_decode($response->getBody()))->error_msg);
+                ->setRequestId(json_decode($response->getBody())->request_id)
+                ->setErrorCode(json_decode($response->getBody())->error_code)
+                ->setErrorMessage(json_decode($response->getBody())->error_msg);
         } else {
             return (new Response())->setStatusCode($response->getStatusCode())
-                ->setRequestId(optional(json_decode($response->getBody()))->request_id)
+                ->setRequestId(json_decode($response->getBody())->request_id)
                 ->setResult(collect(json_decode($response->getBody())));
         }
     }
