@@ -22,7 +22,7 @@
             "HuaweiCloud\\": "src/"
         },
         "files": [
-            "src/Helpers/MailHelper.php",
+            "src/Helpers/MailHelper.php"
         ]
     },
     "extra": {
