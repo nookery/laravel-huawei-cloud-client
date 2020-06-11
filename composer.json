@@ -13,13 +13,17 @@
     "require": {
         "php": "^5.5 || ^7.0",
         "guzzlehttp/guzzle": "~6.0",
+        "nesbot/carbon": "~1.0",
         "ext-json": "*"
     },
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "HuaweiCloud\\": "src/"
-        }
+        },
+        "files": [
+            "src/Helpers/MailHelper.php",
+        ]
     },
     "extra": {
         "laravel": {

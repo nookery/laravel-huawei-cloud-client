@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use HuaweiCloud\Contracts\Response;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use HuaweiCloud\Exceptions\HuaweiCloudException;
 use Illuminate\Support\Facades\Log;
