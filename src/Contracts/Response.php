@@ -11,7 +11,7 @@ class Response
      *
      * @var
      */
-    protected $request_id;
+    public $request_id;
 
     /**
      * HTTP响应状态码，一组从1xx到5xx的数字代码，
@@ -19,28 +19,28 @@ class Response
      *
      * @var
      */
-    protected $status_code = 0;
+    public $status_code = 0;
 
     /**
      * 错误码，当接口调用出错时，会返回错误码及错误信息说明
      *
      * @var
      */
-    protected $error_code = 0;
+    public $error_code = 0;
 
     /**
      * 错误描述信息，当接口调用出错时，会返回错误码及错误信息说明
      *
      * @var
      */
-    protected $error_msg = '';
+    public $error_msg = '';
 
     /**
      * API调用返回的响应消息体，不同API有不同的返回
      *
      * @var
      */
-    protected $result = null;
+    public $result = null;
 
     /**
      * 获取属性
